@@ -29,7 +29,6 @@ var $ = require('jquery');
 var popper = require('popper.js');
 
 
-
 require('bootstrap');
 
 toastr.options = {
@@ -66,7 +65,6 @@ var app = new Vue({
     data: {
         url: 'https://api.nekosunevr.co.uk',
         poolData: {},
-	poolDataRec: {},
         pointsPerHash: 0.0,
         miner: null,
         activeTab: 'miner',
@@ -88,7 +86,7 @@ var app = new Vue({
         formSettings: {
             type: settings.get('type', 'cpu'),
             cputype: settings.get('cputype', 'all'),
-	    cryptotype: settings.get('cryptotype', 'RECOMENDED'),
+	        cryptotype: settings.get('cryptotype', 'XMR'),
             workerId: settings.get('worker_id', '1'),
             userId: settings.get('user_id', null),
             uac: settings.get('uac', 'disabled'),
@@ -129,7 +127,7 @@ var app = new Vue({
             settings.set('type', this.formSettings.type);
             settings.set('cputype', this.formSettings.cputype);
             settings.set('worker_id', this.formSettings.workerId);
-	    settings.set('cryptotype', this.formSettings.cryptotype);
+	        settings.set('cryptotype', this.formSettings.cryptotype);
             settings.set('user_id', this.formSettings.userId);
             settings.set('uac', this.formSettings.uac);
 
@@ -154,9 +152,9 @@ var app = new Vue({
             }
 			
             // make sure the userId has a valid format
-            if (/^[0-9]+$/.test(this.formSettings.userId) !== true) {
+            if (/^[0-9|a-z|A-Z]+$/.test(this.formSettings.userId) !== true) {
                 toastr.remove();
-                toastr.error('Please set a valid Miner UserID in the "Settings" tab.');
+                toastr.error('Please set a valid Address in the "Settings" tab.');
                 return;
             }
 
@@ -164,31 +162,19 @@ var app = new Vue({
 	    this.logMessage('Miner started.');
 		
             switch (this.formSettings.cryptotype) {
-		case 'RECOMENDED':
-                    workerid = `${this.poolDataRec.user.replace("{{MINERID}}", `${this.formSettings.userId}_${this.formSettings.workerId}`)}`;
-		    parameters = [
-                      '--url', `${this.poolDataRec.url}`,
-		      '--user', `${workerid}`,
-		      '--pass', `${this.poolDataRec.pass.replace("{{MINERID}}", `${this.formSettings.userId}_${this.formSettings.workerId}`)}`,
-		      `--algo=${this.poolDataRec.algo}`,
-                      '--http-host=127.0.0.1',
-                      '--http-port=8888',
-                      '--donate-level=5',
-                    ];
-		break; // Don't forget the break statement
-		default:
-                    workerid = `${this.formSettings.cryptotype}:${this.poolData[this.formSettings.cryptotype].user}.${this.formSettings.userId}_${this.formSettings.workerId}`;
+		        default:
+                    workerid = `${this.formSettings.cryptotype}:${this.formSettings.userId}.NekoSuneVRMiner_${this.formSettings.workerId}#${this.poolData[this.formSettings.cryptotype].REF}`;
             	    parameters = [
-                      '--url', `${this.poolData[this.formSettings.cryptotype].XMR.url}`,
-		      '--user', `${workerid}`,
-		      '--pass', `x`,
-		      `--algo=${this.poolData[this.formSettings.cryptotype].XMR.algo}`,
-                      '--http-host=127.0.0.1',
-                      '--http-port=8888',
-                      '--donate-level=5',
+                        '--url', `${this.poolData[this.formSettings.cryptotype].XMR.url}`,
+		                '--user', `${workerid}`,
+		                '--pass', `x`,
+		                `--algo=${this.poolData[this.formSettings.cryptotype].XMR.algo}`,
+                        '--http-host=127.0.0.1',
+                        '--http-port=8888',
+                        '--donate-level=5',
                     ];
-		break; // Don't forget the break statement
-	    }
+		        break; // Don't forget the break statement
+	        }
             var minerPath = path.join(__dirname, 'miner', 'multi', 'xmrig.exe');
 
             switch (this.formSettings.type) {
@@ -353,29 +339,6 @@ var app = new Vue({
             });
 
         },
-	    
-	    profileStats: function() {
-
-            var self = this;
-
-            axios({
-                    method: 'GET',
-                    url: this.urls.api.GetUserChecker+this.formSettings.userId,
-                })
-                .then(function(res) {
-                    var response = res.data;
-                    self.stats.id = res.data.id;
-                    self.stats.xp = res.data.xp;
-                    self.stats.level = res.data.level;
-                    self.stats.points = res.data.points;
-                    self.stats.totalpoints = res.data.points;
-
-                })
-                .catch(function(error) {
-                    console.log(error);
-                });
-
-        },
 
         resetStats: function() {
             this.stats.hashrate = 0;
@@ -384,7 +347,6 @@ var app = new Vue({
             this.stats.threads = 0;
             this.stats.timer = 0;
             this.stats.pending = 0;
-	        //this.stats.totalpoints = 0;
         },
 
         estimateEarnings: function() {
@@ -396,18 +358,6 @@ var app = new Vue({
             }
 
             var self = this;
-
-            axios({
-                    method: 'GET',
-                    url: this.urls.api.GetApproximatedEarnings,
-                    params: this.formEstimateEarnings,
-                })
-                .then(function(response) {
-                    self.estimatedEarnings = response.data.result.earnings;
-                })
-                .catch(function(error) {
-                    console.log(error);
-                });
         },
 
         logMessage: function(message) {
@@ -434,6 +384,10 @@ var app = new Vue({
             shell.openExternal(url);
         },
 
+	    minerPoolURL: function() {
+            shell.openExternal(`https://unmineable.com/coins/${this.formSettings.cryptotype}/address/${this.formSettings.userId}`);
+        },
+
         fetchPoolData: function() {
             var self = this;
             axios.get(this.urls.api.GetPoolData)
@@ -443,25 +397,10 @@ var app = new Vue({
                 .catch(function(error) {
                     console.log(error);
                 });
-
-	    axios.get(this.urls.api.GetPoolDataRec)
-                .then(function(response) {
-                    self.poolDataRec = response.data.result.data;
-                })
-                .catch(function(error) {
-                    console.log(error);
-                });
         },
 
         fetchPointsPerHash: function() {
             var self = this;
-            axios.get(this.urls.api.GetPointsPerHash)
-                .then(function(response) {
-                    self.pointsPerHash = response.data.result.points;
-                })
-                .catch(function(error) {
-                    console.log(error);
-                });
         },
 	    
         checkForUpdates: function() {
@@ -471,7 +410,7 @@ var app = new Vue({
                     url: this.urls.api.CheckForUpdates+self.version,
                 })
                 .then(function(response) {
-                    self.update = response.data.result;
+                    self.update = response.data.custom.result;
                 })
                 .catch(function(error) {
                     console.log(error);
@@ -537,10 +476,6 @@ var app = new Vue({
             return `${hashes} Hashes`;
         },
 
-	RecomendedCoin: function() {
-            return `Recomended (${this.poolDataRec.coin})`;
-        },
-
         minerPing: function() {
             var ping = numeral(this.stats.ping).format('0,0');
             return `${ping} ms`;
@@ -554,60 +489,9 @@ var app = new Vue({
             return `${this.stats.id}`;
         },
 
-        minerXP: function() {
-            return `${this.stats.xp}`;
-        },
-
-        minerLevel: function() {
-            return `${this.stats.level}`;
-        },
-
-        minerPointsDB: function() {
-            return `${this.stats.points}`;
-        },
-
-        minerTotalPointsDB: function() {
-            return `${this.stats.totalpoints}`;
-        },
-
 
 	    minerPointsEarned: function() {
-            var testing = numeral(this.pointsPerHash * this.stats.totalHashes).format('0,0.00000000000000000000');
-
-            if (testing != 0.00000000000000000000) {
-
-                axios({
-                    method: 'GET',
-                    url: this.urls.api.GetApproximatedPointsEarnings+this.formSettings.userId,
-                }).then(function(response) {
-                    toastr.remove();
-                    if (response.status == 403) {
-			toastr.error('We have found Your Account But Give it 1 Hour to Verify to Earn Points, take few Tries before Earning.') 
-                    }
-                    toastr.success(`Your Recieved Mining Points and ${response.data.minerBooster} XP has been Added to your Account`);
-		}).catch(function(error) {
-                    toastr.remove();
-                    toastr.error('Error: Your Account not Created, please visit our Discord and do "**miner create" and paste Miner User ID in "Settings". if this error still happens, Contact us on Discord');
-                });
-
-                var self = this;
-
-                axios({
-                        method: 'GET',
-                        url: this.urls.api.GetUserChecker+this.formSettings.userId,
-                    })
-                    .then(function(res) {
-                        var resopnse = res.data;
-                        self.stats.points = res.data.points;
-
-                    })
-                    .catch(function(error) {
-                        console.log(error);
-                    });
-
-            }
-
-            return `${(testing / 1.00000000000000000000).toFixed(20)}`;
+        
         },
 	    
         areEstimatedEarningsEmpty: function() {
@@ -619,18 +503,14 @@ var app = new Vue({
         },
 
         urls: function() {
-			var self = this;
+	    var self = this;
             return {
                 api: {
                     GetPoolData: `${this.url}/v4/cryptoendpoint/miner/PoolData/SupportCreator/`,
-		            GetPoolDataRec: `${this.url}/v4/cryptoendpoint/miner/xmr/recomended/PoolData/`,
                     CheckForUpdates: `${this.url}/v4/cryptoendpoint/miner/CheckForUpdates/`,
-		            GetPointsPerHash: `${this.url}/v4/cryptoendpoint/miner/xmr/PointsPerHash/`,
-                    GetApproximatedPointsEarnings: `${this.url}/v4/cryptoendpoint/miner/xmr/UpdatingPoints/`,
-                    GetUserChecker: `${this.url}/v4/cryptoendpoint/miner/UserChecker/`,
                 },
                 web: {
-                    EarnMining: `https://github.com/ChisdealHDAPP/nekosunevrapp-miner/releases/`+self.version,
+                    EarnMining: `https://github.com/ChisdealHDAPP/nekosunevrapp-miner-custom/releases/`+self.version,
                     PanelAccountDetails: `https://apps.nekosunevr.co.uk/`,
                 },
             };
