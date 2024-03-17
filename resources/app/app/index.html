@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>AlloyXuast ETHASH Miner (Donation Support)</title>
+    <title>AlloyXuast ETHASH Miner (Custom Wallet Miner)</title>
 
     <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
@@ -42,11 +42,6 @@
                             <i class="fa fa-list"></i> Logs
                         </a>
                     </li>
-                    <li v-bind:class="{ active: activeTab == 'profileStats'}" class="nav-item">
-                        <a v-on:click="changeActiveTab('profileStats')" class="nav-link" href="javascript:;">
-                            <i class="fa fa-user-circle"></i> Status Page
-                        </a>
-                    </li>
                     <li v-bind:class="{ active: activeTab == 'settings'}" class="nav-item">
                         <a v-on:click="changeActiveTab('settings')" class="nav-link" href="javascript:;">
                             <i class="fa fa-cogs"></i> Settings
@@ -68,14 +63,6 @@
             <button v-on:click="toggleMiner" v-bind:class="toggleMinerClass" type="button" class="btn btn-block margin-top-20">{{ toggleMinerText }}</button>
             <table class="table table-striped margin-top-30">
                 <tbody>
-                    <tr hidden>
-                        <td>Mining Points Earned</td>
-                        <td>{{ minerPointsEarned }} <img src="img/coins.png" class="points"></td>
-                    </tr>
-                    <tr>
-                        <td>Total Mining Points</td>
-                        <td>{{ minerTotalPointsDB }} <img src="img/coins.png" class="points"></td>
-                    </tr>
                     <tr>
                         <td>Uptime</td>
                         <td>{{ minerWatch }}</td>
@@ -99,43 +86,14 @@
                 </tbody>
             </table>
             <div class="alert alert-warning margin-top-20" role="alert">
-                <strong>Note:</strong> We have Returned XP / Level System by Mining<br>You have to Mine Till get Total Mining Points to 1.00000000000000000000 = 1 USD<br>You will Mine Small till hit Freshold of you can buy stuff on our Store.<br><br>We are not Responsable any Damage you hardware take this Miner. "USE AT YOUR OWN RISK!" 
-			</div>
+                <strong>Note:</strong> We are not Responsable any Damage you hardware take this Miner.<br><br>"USE AT YOUR OWN RISK!"<br><br>YOUR POOL BE CONNECTING TO <a v-on:click="minerPoolURL" class="navbar-brand" href="javascript:;">UNMINEABLE</a>
+	        </div>
         </div>
 
         <div v-show="activeTab === 'logs'" id="logs-box" class="margin-top-20">
             <p v-for="entry in log">
                 {{ entry.date }} {{ entry.message }}
             </p>
-        </div>
-
-        <div v-if="activeTab === 'profileStats'">
-            <div v-if="areEstimatedEarningsEmpty" class="alert alert-warning margin-top-20" role="alert">
-                <strong>Important:</strong> This is only Trace your earnings and your XP / Levels. Only this will level you up or getting XP is Taking on Discord Server or Mining.<br> NOTE: Nitro Boosters and Twitch Subs get 10x XP with this miner.
-                <a v-on:click="openExternal('https://apps.nekosunevr.co.uk')" href="javascript:;">JOIN NOW</a> Get Yours 10x XP
-            </div>
-            <form class="margin-top-10">
-                <div class="form-group margin-top-20">
-                    <button v-on:click="profileStats" type="button" class="btn btn-primary btn-block">Estimate Account</button>
-                </div>
-            </form>
-
-            <table class="table table-striped margin-top-30">
-                <tbody>
-                    <tr>
-                        <th scope="col">ID: </th>
-                        <th scope="col">XP: </th>
-                        <th scope="col">Level: </th>
-                        <th scope="col">Points: </th>
-                    </tr>
-                    <tr>
-                        <td>{{ minerID }}</td>
-                        <td>{{ minerXP }}</td>
-                        <td>{{ minerLevel }}</td>
-                        <td>{{ minerPointsDB }}</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
 
         <div v-if="activeTab === 'settings'">
@@ -153,13 +111,22 @@
                             <option value="8">8</option>
                             <option value="9">9</option>
                             <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
                         </select>
                     <small class="form-text text-muted">Only change this if you mine with multiple computers. Assign a different number to every PC.</small>
                 </div>
 		<div class="form-group">
                     <label>Which Crypto Want Support?</label>
                     <select v-model="formSettings.cryptotype" class="custom-select">
-                            <option value="RECOMENDED">{{ RecomendedCoin }}</option>
                             <option value="XMR">Monero (XMR)</option>
                             <option value="DOGE">DogeCoin (DOGE)</option>
                             <option value="SHIB">SHIBA INU (SHIB)</option>
@@ -177,9 +144,9 @@
                     <small class="form-text text-muted">Only Select what Type want Support?</small>
                 </div>
                 <div class="form-group">
-                    <label>Enter Miner USERID!?</label>
-                    <input v-model="formSettings.userId" type="text" class="form-control" placeholder="Your User ID">
-                    <small class="form-text text-muted">You can Get Miner UserID by Sign up Website @ <a href="https://apps.nekosunevr.co.uk">WEBSITE</a> Then go to Settings->User Settings Then Find Miner UserID</small>
+                    <label>Enter Your Wallet Address?</label>
+                    <input v-model="formSettings.userId" type="text" class="form-control" placeholder="Your WALLET ADDRESS">
+                    <small class="form-text text-muted">To get your Wallet Address, Go to your Wallet and Copy Addres? </small>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" value="disabled" v-model="formSettings.uac">
