@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "chisdealhdapp-pyrin-miner",
+  "name": "chisdealhdapp-pyrin-miner-custom",
   "version": "0.4.0",
   "description": "Basic miner interface for ChisdealHDAPP",
   "main": "main.js",
