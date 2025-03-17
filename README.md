@@ -1,0 +1,2 @@
+# miner-custom
+custom miner
